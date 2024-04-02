@@ -41,6 +41,7 @@
 #include "motor/stepDir/StepDir.h"
 #include "motor/servo/Servo.h"
 #include "motor/oDrive/ODrive.h"
+#include "motor/RMD/RMD.h"
 
 // helpers for step/dir and servo parameters
 #define subdivisions param1

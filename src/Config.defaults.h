@@ -380,6 +380,10 @@
   #endif
 #endif
 
+#if AXIS1_DRIVER_MODEL >= RMD_DRIVER_FIRST && AXIS1_DRIVER_MODEL <= RMD_DRIVER_LAST
+  #define AXIS1_RMD_PRESENT
+#endif
+
 #ifndef AXIS2_DRIVER_MODEL
 #define AXIS2_DRIVER_MODEL            OFF                         // specify a driver to enable
 #endif
@@ -554,6 +558,10 @@
   #ifndef AXIS2_ODRIVE_D
   #define AXIS2_ODRIVE_D                 1.0                       // D = derivative
   #endif
+#endif
+
+#if AXIS2_DRIVER_MODEL >= RMD_DRIVER_FIRST && AXIS2_DRIVER_MODEL <= RMD_DRIVER_LAST
+  #define AXIS2_RMD_PRESENT
 #endif
 
 // decode internal mount type, tangent arm, azm wrap
@@ -2187,7 +2195,11 @@
                                                                   // or 1/0.7583 = 1.32 arc-min/tick;  1.32*60 sec = 79.2 arc sec per encoder tick
 #endif
 
-#if defined(SERVO_MOTOR_PRESENT) || defined(STEP_DIR_MOTOR_PRESENT) || defined(ODRIVE_MOTOR_PRESENT)
+#if defined(AXIS1_RMD_PRESENT) || defined(AXIS2_RMD_PRESENT)
+  #define RMD_MOTOR_PRESENT
+#endif
+
+#if defined(SERVO_MOTOR_PRESENT) || defined(STEP_DIR_MOTOR_PRESENT) || defined(ODRIVE_MOTOR_PRESENT) || defined(RMD_MOTOR_PRESENT)
   #define MOTOR_PRESENT
 #endif
 

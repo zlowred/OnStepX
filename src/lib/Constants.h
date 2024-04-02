@@ -80,6 +80,11 @@
 #define ODRIVE                      200    // First generation ODrive (axis 1 and 2 only)
 #define ODRIVE_DRIVER_LAST          200
 
+// RMD driver
+#define RMD_DRIVER_FIRST            400
+#define RMD                         400    // First generation RMD
+#define RMD_DRIVER_LAST             400
+
 // servo encoder (must match Encoder library)
 #define ENC_FIRST                   1
 #define AB                          1      // AB quadrature encoder
@@ -108,6 +113,7 @@
 #define SERVO_FEEDBACK_LAST         1
 
 // driver (step/dir) and servo, misc.
+#define RMDRIVER                    -9     // general purpose flag for a RMD driver motor
 #define ODRIVER                     -10    // general purpose flag for a ODRIVE driver motor
 #define SERVO                       -11    // general purpose flag for a SERVO driver motor
 #define STEP_DIR                    -12    // general purpose flag for a STEP_DIR driver motor
