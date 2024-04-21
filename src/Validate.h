@@ -207,6 +207,10 @@
   #error "Configuration (Config.h): Setting AXIS1_SENSE_LIMIT_MAX unknown, use OFF or HIGH/LOW and HYST() and/or THLD() as described in comments."
 #endif
 
+#ifndef AXIS1_REDUCTION_RATIO
+  #define AXIS1_REDUCTION_RATIO 1.0
+#endif
+
 // AXIS2 DEC/ALT
 #if AXIS2_DRIVER_MODEL != OFF && \
     (AXIS2_DRIVER_MODEL < STEP_DIR_DRIVER_FIRST || AXIS2_DRIVER_MODEL > STEP_DIR_DRIVER_LAST) && \
@@ -317,6 +321,10 @@
 
 #if AXIS2_TANGENT_ARM_CORRECTION != ON && AXIS2_TANGENT_ARM_CORRECTION != OFF
   #error "Configuration (Config.h): Setting AXIS2_TANGENT_ARM_CORRECTION unknown, use OFF or ON."
+#endif
+
+#ifndef AXIS2_REDUCTION_RATIO
+  #define AXIS2_REDUCTION_RATIO 1.0
 #endif
 
 #if MOUNT_ALTERNATE_ORIENTATION != OFF && MOUNT_ALTERNATE_ORIENTATION != ON

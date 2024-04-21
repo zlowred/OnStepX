@@ -17,8 +17,12 @@
 
 // RMD update rate default 1Hz
 #ifndef RMD_UPDATE_MS
-  #define RMD_UPDATE_MS   1000
+  #define RMD_UPDATE_MS   100
 #endif
+#ifndef RMD_MAX_SPEED_NULTIPLIER
+  #define RMD_MAX_SPEED_NULTIPLIER   1.01
+#endif
+
 
 typedef struct RMDDriverSettings {
   int16_t model;
@@ -81,6 +85,9 @@ class RMDMotor : public Motor {
     uint8_t rmdMonitorHandle = 0;
     uint8_t taskHandle = 0;
 
+    double reductionRatio = 0;
+    double stepsPerDegree = 0;
+
     int  stepSize = 1;                  // step size
     volatile int  homeSteps = 1;        // step count for microstep sequence between home positions (driver indexer)
     volatile bool takeStep = false;     // should we take a step
@@ -98,7 +105,6 @@ class RMDMotor : public Motor {
     bool isSlewing = false;
 
     DriverStatus status = { false, {false, false}, {false, false}, false, false, false, false };
-    float stepsPerMeasure = 0.0F;
 };
 
 #endif

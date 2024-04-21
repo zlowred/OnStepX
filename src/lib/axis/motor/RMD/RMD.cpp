@@ -1,7 +1,8 @@
 // -----------------------------------------------------------------------------------
-// axis rmd servo motor
+// axis RMD servo motor
 
 #include "RMD.h"
+#include "CAN.h"
 
 #ifdef RMD_MOTOR_PRESENT
 
@@ -11,14 +12,15 @@ RMDMotor *rmdMotorInstance[2];
 IRAM_ATTR void moveRMDMotorAxis1() { rmdMotorInstance[0]->move(); }
 IRAM_ATTR void moveRMDMotorAxis2() { rmdMotorInstance[1]->move(); }
 
+RmdCan rmdCan;
+
 // constructor
 RMDMotor::RMDMotor(uint8_t axisNumber, const RMDDriverSettings *Settings, bool useFastHardwareTimers) {
-  V("constructor(");V(axisNumber);V(", ");V("<settings>");V(", ");V(useFastHardwareTimers);VL(")");
   if (axisNumber < 1 || axisNumber > 2) return;
 
   driverType = RMDRIVER;
   strcpy(axisPrefix, "MSG: RMD _, ");
-  axisPrefix[9] = '0' + this->axisNumber;
+  axisPrefix[9] = '0' + axisNumber;
   this->axisNumber = axisNumber;
 
 
@@ -34,8 +36,11 @@ RMDMotor::RMDMotor(uint8_t axisNumber, const RMDDriverSettings *Settings, bool u
 }
 
 bool RMDMotor::init() {
-  V(axisPrefix);VL("init()");
   if (axisNumber < 1 || axisNumber > 2) return false;
+
+  if (!rmdCan.init()) {
+    V(axisPrefix);VL("Failed to init CAN bus!");
+  }
 
   enable(false);
 
@@ -58,7 +63,6 @@ bool RMDMotor::init() {
 
 // set driver reverse state
 void RMDMotor::setReverse(int8_t state) {
-  V(axisPrefix);V("setReverse(");V(state);VL(")");
   if (state == ON) {
     VF("WRN: RMD"); V(axisNumber); VF(", ");
     VLF("axis reversal must be accomplished with hardware or RMD setup!");
@@ -67,9 +71,9 @@ void RMDMotor::setReverse(int8_t state) {
 
 // set driver parameters
 void RMDMotor::setParameters(float param1, float param2, float param3, float param4, float param5, float param6) {
-  V(axisPrefix);V("setParameters(");V(param1);V(", ");V(param2);V(", ");V(param3);V(", ");V(param4);V(", ");V(param5);V(", ");V(param6);VL(")");
-  UNUSED(param1); // general purpose settings defined in Extended.config.h and stored in NV, they can be modified at runtime
-  UNUSED(param2);
+  stepsPerDegree = param1 / 360 * TWO_PI;
+  reductionRatio = param2;
+
   UNUSED(param3);
   UNUSED(param4);
   UNUSED(param5);
@@ -79,9 +83,18 @@ void RMDMotor::setParameters(float param1, float param2, float param3, float par
 
 // validate driver parameters
 bool RMDMotor::validateParameters(float param1, float param2, float param3, float param4, float param5, float param6) {
-    V(axisPrefix);V("validateParameters(");V(param1);V(", ");V(param2);V(", ");V(param3);V(", ");V(param4);V(", ");V(param5);V(", ");V(param6);VL(")");
-  UNUSED(param1);
-  UNUSED(param2);
+  if (param1 < 1000) {
+    V(axisPrefix);
+    VL("Steps per degree appear way too low");
+    return false;
+  }
+
+  if (param2 < 1) {
+    V(axisPrefix);
+    VL("Reduction ratio seems incorrect");
+    return false;
+  }
+
   UNUSED(param3);
   UNUSED(param4);
   UNUSED(param5);
@@ -94,8 +107,11 @@ void RMDMotor::enable(bool state) {
   V(axisPrefix); V("driver powered ");
   if (state) { VLF("up"); } else { VLF("down"); } 
   
-//   int requestedState = AXIS_STATE_IDLE;
-//   if (state) requestedState = AXIS_STATE_CLOSED_LOOP_CONTROL;
+  if (state) {
+    rmdCan.enable(axisNumber);
+  } else {
+    rmdCan.disable(axisNumber);
+  }
   
   V(axisPrefix); VF("closed loop control - ");
   if (state) { VLF("Active"); } else { VLF("Idle"); }
@@ -104,43 +120,29 @@ void RMDMotor::enable(bool state) {
 }
 
 void RMDMotor::setInstrumentCoordinateSteps(long value) {
-  V(axisPrefix);V("setInstrumentCoordinateSteps(");V(value);VL(")");  
   Motor::setInstrumentCoordinateSteps(value);
 }
 
 // get the associated driver status
 DriverStatus RMDMotor::getDriverStatus() {
-    V(axisPrefix);VL("getDriverStatus()");
   return status;
 }
 
 // resets motor and target angular position in steps, also zeros backlash and index
 void RMDMotor::resetPositionSteps(long value) {
-    V(axisPrefix);V("resetPositionSteps(");V(value);VL(")");  
   // this is where the initial odrive position in "steps" is brought into agreement with the motor position in steps
   // not sure on this... but code below ignores (value,) gets the odrive position convert to steps and resets the motor
   // there (as the odrive encoders are absolute.)
 
   long oPosition;
-//   if (axisNumber - 1 == 0) oPosition = o_position0;
-//   if (axisNumber - 1 == 1) oPosition = o_position1;
 
-  // get ODrive position in fractionial Turns
-//   #if ODRIVE_COMM_MODE == OD_UART
-//     oPosition = _oDriveDriver->GetPosition(axisNumber - 1)*TWO_PI*stepsPerMeasure; // axis1/2 are in steps per radian
-//   #elif ODRIVE_COMM_MODE == OD_CAN
-//     oPosition = _oDriveDriver->GetPosition(axisNumber - 1)*TWO_PI*stepsPerMeasure; // axis1/2 are in steps per radian
-//   #endif
-
-    oPosition = 0;
+  oPosition = rmdCan.getPosition(axisNumber) * stepsPerDegree / reductionRatio; // TODO adjust to steps
 
   noInterrupts();
   motorSteps    = oPosition;
   targetSteps   = motorSteps;
 
-    // but what if the odrive encoders are incremental?  how to tell the odrive what its angular position is?
-    // here thinking we'll ignore it... sync OnStepX there and let the offset handle it
-    indexSteps  = value - motorSteps;
+  indexSteps  = value - motorSteps;
 
   backlashSteps = 0;
   interrupts();
@@ -148,7 +150,6 @@ void RMDMotor::resetPositionSteps(long value) {
 
 // set frequency (+/-) in steps per second negative frequencies move reverse in direction (0 stops motion)
 void RMDMotor::setFrequencySteps(float frequency) {
-    V(axisPrefix);V("setFrequencySteps(");V(frequency);VL(")");  
   // negative frequency, convert to positive and reverse the direction
   int dir = 0;
   if (frequency > 0.0F) dir = 1; else if (frequency < 0.0F) { frequency = -frequency; dir = -1; }
@@ -193,14 +194,12 @@ void RMDMotor::setFrequencySteps(float frequency) {
 }
 
 float RMDMotor::getFrequencySteps() {
-    V(axisPrefix);VL("getFrequencySteps()");
   if (lastPeriod == 0) return 0;
   return (16000000.0F / lastPeriod) * absStep;
 }
 
 // set slewing state (hint that we are about to slew or are done slewing)
 void RMDMotor::setSlewing(bool state) {
-    V(axisPrefix);V("setSlewing(");V(state);VL(")");  
   isSlewing = state;
 }
 
@@ -208,23 +207,22 @@ void RMDMotor::setSlewing(bool state) {
 void RMDMotor::poll() {
   if ((long)(millis() - lastSetPositionTime) < RMD_UPDATE_MS) return;
   lastSetPositionTime = millis();
-    V(axisPrefix);VL("poll()");
 
   noInterrupts();
   long target = motorSteps + backlashSteps;
   interrupts();
 
-  UNUSED(target);
-//   #if ODRIVE_COMM_MODE == OD_UART
-//     setPosition(axisNumber -1, target/(TWO_PI*stepsPerMeasure));
-//   #elif ODRIVE_COMM_MODE == OD_CAN
-//     _oDriveDriver->SetPosition(axisNumber -1, target/(TWO_PI*stepsPerMeasure));
-//   #endif
+  double rpm = getFrequencySteps() * 60. / stepsPerDegree / 360. * reductionRatio * RMD_MAX_SPEED_NULTIPLIER;
+
+  int arcSeconds = target / stepsPerDegree * 3600.;
+  V(axisPrefix);V("Set pos: ");V(arcSeconds/3600);V("º");V((arcSeconds/60)%60);V("'");V(arcSeconds%60);V("\" (x");V(reductionRatio);V(") @ ");V(rpm);V("RPM");
+  if (axisNumber == 1) V(" "); else VL("");
+
+  rmdCan.setPosition(axisNumber, arcSeconds / 36. * reductionRatio, rpm * 360. / 60.); 
 }
 
 // sets dir as required and moves coord toward target at setFrequencySteps() rate
 IRAM_ATTR void RMDMotor::move() {
-    V(axisPrefix);VL("move()");
   if (sync && !inBacklash) targetSteps += step;
 
   if (motorSteps > targetSteps) {

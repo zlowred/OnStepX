@@ -67,14 +67,16 @@ typedef struct AxisSettings {
   int8_t     reverse;
   AxisLimits limits;
   float      backlashFreq;
+  float      reductionRatio;
 } AxisSettings;
 
-#define AxisStoredSettingsSize 41
+#define AxisStoredSettingsSize 45
 typedef struct AxisStoredSettings {
   double     stepsPerMeasure;
   int8_t     reverse;
   float      param1, param2, param3, param4, param5, param6;
   AxisLimits limits;
+  float      reductionRatio;
 } AxisStoredSettings;
 #pragma pack()
 
