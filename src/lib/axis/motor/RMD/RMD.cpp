@@ -83,18 +83,8 @@ void RMDMotor::setParameters(float param1, float param2, float param3, float par
 
 // validate driver parameters
 bool RMDMotor::validateParameters(float param1, float param2, float param3, float param4, float param5, float param6) {
-  if (param1 < 1000) {
-    V(axisPrefix);
-    VL("Steps per degree appear way too low");
-    return false;
-  }
-
-  if (param2 < 1) {
-    V(axisPrefix);
-    VL("Reduction ratio seems incorrect");
-    return false;
-  }
-
+  UNUSED(param1);
+  UNUSED(param2);
   UNUSED(param3);
   UNUSED(param4);
   UNUSED(param5);
@@ -215,9 +205,13 @@ void RMDMotor::poll() {
   double rpm = getFrequencySteps() * 60. / stepsPerDegree / 360. * reductionRatio * RMD_MAX_SPEED_NULTIPLIER;
 
   int arcSeconds = target / stepsPerDegree * 3600.;
-  V(axisPrefix);V("Set pos: ");V(arcSeconds/3600);V("º");V((arcSeconds/60)%60);V("'");V(arcSeconds%60);V("\" (x");V(reductionRatio);V(") @ ");V(rpm);V("RPM");
-  if (axisNumber == 1) V(" "); else VL("");
-
+  static int counter = 0;
+  if (axisNumber == 1) counter++;
+  if (counter == 500) {
+    if (axisNumber != 1) counter = 0;
+    V(axisPrefix);V("Set pos: ");V(arcSeconds/3600);V("º");V((arcSeconds/60)%60);V("'");V(arcSeconds%60);V("\" (x");V(reductionRatio);V(") @ ");V(rpm);V("RPM");
+    if (axisNumber == 1) V(" "); else VL("");
+  }
   rmdCan.setPosition(axisNumber, arcSeconds / 36. * reductionRatio, rpm * 360. / 60.); 
 }
 

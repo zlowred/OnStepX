@@ -1,10 +1,10 @@
 #pragma once
 
 #ifndef CAN_INTERAFCE
-#include <ACAN.h>
-#define CAN_INTERAFCE ACAN::can0
+#include <ACAN_T4.h>
+#define CAN_INTERAFCE ACAN_T4::can1
 #define CAN_MESSAGE CANMessage
-#define CAN_SETTINGS ACANSettings
+#define CAN_SETTINGS ACAN_T4_Settings
 #endif
 
 #include "../../../../Common.h"

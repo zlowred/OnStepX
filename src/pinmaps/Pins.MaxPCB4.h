@@ -57,8 +57,8 @@
 #define PEC_SENSE_PIN           2                // PEC Sense, analog or digital
 
 // The status LED is a two wire jumper with a 10k resistor in series to limit the current to the LED
-#define STATUS_LED_PIN          AUX0_PIN         // Default LED Cathode (-)
-#define MOUNT_LED_PIN           AUX0_PIN         // Default LED Cathode (-)
+#define STATUS_LED_PIN          OFF              // Default LED Cathode (-)
+#define MOUNT_LED_PIN           OFF              // Default LED Cathode (-)
 #ifndef RETICLE_LED_PIN 
   #define RETICLE_LED_PIN       AUX8_PIN         // Default LED Cathode (-)
 #endif
@@ -81,63 +81,70 @@
 // hint that the driver mode pins are dedicated (not shared SPI bus except possibly MISO)
 #define DEDICATED_MODE_PINS
 
+#ifdef SERIAL_GPS_BAUD
+  #undef SERIAL_GPS_BAUD
+#endif
+#define SERIAL_GPS_BAUD         115200
+#define SERIAL_GPS              Serial5
+
+#define BMx280_CS_PIN           41                  
+
 // Axis1 RA/Azm step/dir driver
-#define AXIS1_ENABLE_PIN        33
-#define AXIS1_M0_PIN            37               // SPI MOSI
-#define AXIS1_M1_PIN            36               // SPI SCK
-#define AXIS1_M2_PIN            35               // SPI CS (UART TX)
-#define AXIS1_M3_PIN            AUX1_PIN         // SPI MISO (UART RX)
-#define AXIS1_STEP_PIN          38
-#define AXIS1_DIR_PIN           39
+#define AXIS1_ENABLE_PIN        OFF
+#define AXIS1_M0_PIN            OFF              // SPI MOSI
+#define AXIS1_M1_PIN            OFF              // SPI SCK
+#define AXIS1_M2_PIN            OFF              // SPI CS (UART TX)
+#define AXIS1_M3_PIN            OFF              // SPI MISO (UART RX)
+#define AXIS1_STEP_PIN          OFF
+#define AXIS1_DIR_PIN           OFF
 #ifndef AXIS1_SENSE_HOME_PIN
-  #define AXIS1_SENSE_HOME_PIN  AUX3_PIN
+  #define AXIS1_SENSE_HOME_PIN  OFF
 #endif
 
 // Axis2 Dec/Alt step/dir driver
-#define AXIS2_ENABLE_PIN        40
-#define AXIS2_M0_PIN            41               // SPI MOSI
-#define AXIS2_M1_PIN            13               // SPI SCK
-#define AXIS2_M2_PIN            14               // SPI CS (UART TX)
-#define AXIS2_M3_PIN            AUX1_PIN         // SPI MISO (UART RX)
-#define AXIS2_STEP_PIN          15
-#define AXIS2_DIR_PIN           16
+#define AXIS2_ENABLE_PIN        OFF
+#define AXIS2_M0_PIN            OFF              // SPI MOSI
+#define AXIS2_M1_PIN            OFF              // SPI SCK
+#define AXIS2_M2_PIN            OFF              // SPI CS (UART TX)
+#define AXIS2_M3_PIN            OFF              // SPI MISO (UART RX)
+#define AXIS2_STEP_PIN          OFF
+#define AXIS2_DIR_PIN           OFF
 #ifndef AXIS2_SENSE_HOME_PIN
-  #define AXIS2_SENSE_HOME_PIN  AUX4_PIN
+  #define AXIS2_SENSE_HOME_PIN  OFF
 #endif
 
 // For rotator stepper driver
-#define AXIS3_ENABLE_PIN        11
-#define AXIS3_M0_PIN            12               // SPI MOSI
-#define AXIS3_M1_PIN            24               // SPI SCK
-#define AXIS3_M2_PIN            25               // SPI CS (UART TX)
-#define AXIS3_M3_PIN            AUX1_PIN         // SPI MISO (UART RX)
-#define AXIS3_STEP_PIN          26
-#define SHARED_DIRECTION_PINS                    // Hint that the direction pins are shared
-#define AXIS3_DIR_PIN           27
+#define AXIS3_ENABLE_PIN        2
+#define AXIS3_M0_PIN            3                // SPI MOSI
+#define AXIS3_M1_PIN            4                // SPI SCK
+#define AXIS3_M2_PIN            5                // SPI CS (UART TX)
+#define AXIS3_M3_PIN            6                // SPI MISO (UART RX)
+#define AXIS3_STEP_PIN          7
+#define AXIS3_DIR_PIN           8
 
 // For focuser1 stepper driver
-#define AXIS4_ENABLE_PIN        28
-#define AXIS4_M0_PIN            29               // SPI MOSI
-#define AXIS4_M1_PIN            30               // SPI SCK
-#define AXIS4_M2_PIN            31               // SPI CS (UART TX)
-#define AXIS4_M3_PIN            AUX1_PIN         // SPI MISO (UART RX)
-#define AXIS4_STEP_PIN          32
-#define AXIS4_DIR_PIN           27
+#define AXIS4_ENABLE_PIN        26
+#define AXIS4_M0_PIN            27               // SPI MOSI
+#define AXIS4_M1_PIN            28               // SPI SCK
+#define AXIS4_M2_PIN            29               // SPI CS (UART TX)
+#define AXIS4_M3_PIN            30               // SPI MISO (UART RX)
+#define AXIS4_STEP_PIN          31
+#define AXIS4_DIR_PIN           32
 
 // For focuser2 stepper driver
-#define AXIS5_ENABLE_PIN        11
-#define AXIS5_M0_PIN            12               // SPI MOSI
-#define AXIS5_M1_PIN            24               // SPI SCK
-#define AXIS5_M2_PIN            25               // SPI CS (UART TX)
-#define AXIS5_M3_PIN            AUX1_PIN         // SPI MISO (UART RX)
-#define AXIS5_STEP_PIN          26
-#define AXIS5_DIR_PIN           27
+#define AXIS5_ENABLE_PIN        OFF
+#define AXIS5_M0_PIN            OFF              // SPI MOSI
+#define AXIS5_M1_PIN            OFF              // SPI SCK
+#define AXIS5_M2_PIN            OFF              // SPI CS (UART TX)
+#define AXIS5_M3_PIN            OFF              // SPI MISO (UART RX)
+#define AXIS5_STEP_PIN          OFF
+#define AXIS5_DIR_PIN           OFF
 
 // ST4 interface
-#define ST4_RA_W_PIN            3                // ST4 RA- West
-#define ST4_DEC_S_PIN           4                // ST4 DE- South
-#define ST4_DEC_N_PIN           5                // ST4 DE+ North
-#define ST4_RA_E_PIN            6                // ST4 RA+ East
+#define ST4_RA_W_PIN            OFF              // ST4 RA- West
+#define ST4_DEC_S_PIN           OFF              // ST4 DE- South
+#define ST4_DEC_N_PIN           OFF              // ST4 DE+ North
+#define ST4_RA_E_PIN            OFF              // ST4 RA+ East
 
 #else
 #error "Wrong processor for this configuration!"

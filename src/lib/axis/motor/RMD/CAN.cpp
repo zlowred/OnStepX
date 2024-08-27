@@ -6,7 +6,7 @@ bool RmdCan::init() {
 
         const uint32_t errorCode = CAN_INTERAFCE.begin(settings);
         if (0 == errorCode) {
-            V("CAN init ok");
+            VL("CAN init ok");
         } else {
             V("CAN init error ");
             VL(errorCode);

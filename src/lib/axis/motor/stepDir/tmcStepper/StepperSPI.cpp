@@ -55,7 +55,11 @@ void StepDirTmcSPI::init(float param1, float param2, float param3, float param4,
   } else
   if (settings.model == TMC5160) {
     rSense = 0.075F;
-    driver = new TMC5160Stepper(Pins->cs, rSense, Pins->mosi, Pins->miso, Pins->sck);
+    if (Pins->mosi != OFF && Pins->miso != OFF && Pins->sck != OFF) {
+      driver = new TMC5160Stepper(Pins->cs, rSense, Pins->mosi, Pins->miso, Pins->sck);
+    } else {
+      driver = new TMC5160Stepper(Pins->cs);
+    }
     ((TMC5160Stepper*)driver)->begin();
     ((TMC5160Stepper*)driver)->intpol(settings.intpol);
     modeMicrostepTracking();
